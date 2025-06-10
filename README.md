@@ -1,6 +1,7 @@
 A todo_app made with django
 
 to run this project
+  cd mysite
   python manage.py runserver
 
 then access
