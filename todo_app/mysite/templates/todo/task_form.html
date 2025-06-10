@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+
+<article class="task_container">
+
+<h1 class="title en_bold">
+    {% if 'task_update' in request.path %}Edit Task{% else %}Create Task{% endif %}
+</h1>
+
+<form action="" method="POST" class="form_container">
+    <div>{{ form.title }}</div>
+    <div class="form_due_box">{{ form.due }}</div>
+    <div class="form_bool_box">
+        <p>スター付き</p>
+        <div>{{ form.isStared }}</div>
+    </div>
+    <div class="button_container">
+        <button type="submit" class="submit_button form_button">
+            {% if 'task_update' in request.path %}
+                <img src="{% static "img/edit_white_icon.svg" %}" alt="">
+            {% else %}
+                <img src="{% static "img/plus_icon.svg" %}" alt="">
+            {% endif %}
+            <p>
+                {% if 'task_update' in request.path %}編集を確定{% else %}タスクを追加{% endif %}
+            </p>
+        </button>
+        <a href="{% url 'todo:task_list' %}" class="cancel_button form_button">
+            <div class="variable_icon"></div>
+            <p>キャンセル</p>
+        </a>
+    </div>
+    {% csrf_token %}
+</form>
+
+</article>
+
+{% endblock %}

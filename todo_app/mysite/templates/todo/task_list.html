@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% load custom_tags %}
+
+{% block content %}
+
+<article class="task_container">
+
+    <h1 class="title en_bold">
+        {% if request.GET.isCompleted != "true" %}Tasks{% else %}Completed Tasks{% endif %}
+    </h1>
+
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+    
+
+    <form method="get" class="search_container">
+        <input class="search_box" type="search" value="{{ request.GET.query }}" 
+            name="query" type="text" 
+            placeholder=" 検索ワードを入力 ">
+        {% for key, value in request.GET.items %}
+            {% if key != 'query' %}  <!-- クエリフィールド以外を追加 -->
+                <input type="hidden" name="{{ key }}" value="{{ value }}">
+            {% endif %}
+        {% endfor %}
+        <button class="search_button">
+            <img src="{% static "img/search_icon.svg" %}" alt="">
+            <p>検索</p>
+        </button>
+    </form>
+
+    {% if request.GET.isCompleted != "true" %}
+
+    <div class="filter_container">
+        <form action="">
+        {% for key, value in request.GET.items %}
+            {% if key != 'isTodaysTask' %}
+                <input type="hidden" name="{{ key }}" value="{{ value }}">
+            {% endif %}
+        {% endfor %}
+        {% if request.GET.isTodaysTask != 'true' %}
+        <input type="hidden" name="isTodaysTask" value="true">
+        {% endif %}
+        <button type="submit" class="filter_button today {% if request.GET.isTodaysTask == 'true' %}checked{% endif %}">
+            <div class="icon"></div>
+            <p>今日中</p>
+        </button>
+        </form>
+        <form action="">
+            {% for key, value in request.GET.items %}
+                {% if key != 'isOverDue' %}
+                    <input type="hidden" name="{{ key }}" value="{{ value }}">
+                {% endif %}
+            {% endfor %}
+            {% if request.GET.isOverDue != 'true' %}
+            <input type="hidden" name="isOverDue" value="true">            
+            {% endif %}
+            <button type="submit" class="filter_button over_due {% if request.GET.isOverDue == 'true' %}checked{% endif %}">
+                <div class="icon"></div>
+                <p>期限切れ</p>
+            </button>
+        </form>
+        <form action="">
+            {% for key, value in request.GET.items %}
+                {% if key != 'isStared' %} 
+                    <input type="hidden" name="{{ key }}" value="{{ value }}">
+                {% endif %}
+            {% endfor %}
+            {% if request.GET.isStared != 'true' %}
+            <input type="hidden" name="isStared" value="true">
+            {% endif %}
+            <button type="submit" class="filter_button star {% if request.GET.isStared == 'true' %}checked{% endif %}">
+                <div class="icon"></div>
+                <p>スター付き</p>
+            </button>
+        </form>
+        <form action="">
+            {% for key, value in request.GET.items %}
+                {% if key != 'isNoneDue' %}
+                    <input type="hidden" name="{{ key }}" value="{{ value }}">
+                {% endif %}
+            {% endfor %}
+            {% if request.GET.isNoneDue != 'true' %}
+            <input type="hidden" name="isNoneDue" value="true">
+            {% endif %}
+            <button type="submit" class="filter_button noneDue {% if request.GET.isNoneDue == 'true' %}checked{% endif %}">
+                <div class="icon"></div>
+                <p>期限なし</p>
+            </button>
+        </form>
+    </div>
+
+    {% endif %}
+
+    {% for task in task_list %}
+
+    <div class="task_card" id="task-{{ task.id }}">
+        <div class="content">
+            <div class="info">
+                <h1 class="title {% if task.isCompleted %} completed {% endif %}">{{ task.title }}</h1>
+                <div class="due_box">
+                    {% if task.due|is_todays_task and request.GET.isCompleted != "true" %}
+                        <form action="">
+                            {% for key, value in request.GET.items %}
+                                {% if key != 'isTodaysTask' %}
+                                    <input type="hidden" name="{{ key }}" value="{{ value }}">
+                                {% endif %}
+                            {% endfor %}
+                            <input type="hidden" name="isTodaysTask" value="true">
+                            <button type="submit" class="due_tag"><p>今日中</p></button>
+                        </form>
+                    {% endif %}
+                    {% if task.due|is_over_due and request.GET.isCompleted != "true" %}
+                    <form action="">
+                        {% for key, value in request.GET.items %}
+                            {% if key != 'isOverDue' %}
+                                <input type="hidden" name="{{ key }}" value="{{ value }}">
+                            {% endif %}
+                        {% endfor %}
+                        <input type="hidden" name="isOverDue" value="true">
+                        <button type="submit" class="due_tag over_due"><p>期限切れ</p></button>
+                    </form>
+                    {% endif %}
+                    {% if task.due != None %}
+                        <p class="
+                        due
+                        {% if task.due|is_over_due and request.GET.isCompleted != "true" %}
+                            over_due
+                        {% elif task.due|is_todays_task and request.GET.isCompleted != "true" %}
+                            today
+                        
+                        {% endif %}">{{ task.due }}</p>
+                    {% else %}
+                        <p class="due">期限なし</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% if request.GET.isCompleted != "true" %}
+                <a href="{% url "todo:task_update" task.pk %}" class="edit_button"><img src="{% static "img/edit_icon.svg" %}" alt=""></a>
+            {% endif %}
+
+            {% if task.isStared == True %}
+                <img src="{% static "img/star_tag.svg" %}" class="star_tag">
+            {% endif %}
+        </div>
+        <form action="{% url 'todo:toggle_task_completion' task.id %}" method="post" class="check_form">
+            {% csrf_token %}
+            <button type="submit" class="check_button{% if task.isCompleted %} completed {% endif %}">
+                <img src="{% static "img/check_icon.svg" %}" alt="">
+            </button>
+        </form>
+    </div>
+
+    {% empty %}
+
+    <h1 class="empty_massage">
+        
+        {% if request.GET.isCompleted != "true" %}
+            該当するタスクがありません<br>
+            タスクを追加することでここに表示されます
+        {% else %}
+            該当するタスクがありません<br>
+            タスクを完了することでここに表示されます
+        {% endif %}
+
+    </h1>
+
+    {% endfor %}
+
+</article>
+
+{% endblock %}

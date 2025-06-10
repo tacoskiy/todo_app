@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    {% load static %}
+    {% load custom_tags %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Noto+Sans+JP:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static "css/reset.css" %}">
+    <link rel="stylesheet" href="{% static "css/app.css" %}">
+    <title>ToDo App</title>
+</head>
+<body>
+    <main>
+        <div class="side">
+            <section class="dashBoard">
+                <a class="title en_bold" href="{% url 'todo:task_list' %}">DashBoard</a>
+                <article class="achieve_rate_board board">
+                    <div class="icon">
+                        <img src="{% static "img/clock_icon.svg" %}" alt="">
+                    </div>
+                    <div class="board_content">
+                        <h1 class="en_bold">{% calc_task_rate %}%</h1>
+                        <p>今日のタスク達成率</p>
+                    </div>
+                </article>
+                <article class="remaining_task_board board">
+                    <div class="icon">
+                        <img src="{% static "img/check_circle_icon.svg" %}" alt="">
+                    </div>
+                    <div class="board_content">
+                        <h1 class="en_bold">{% get_remaining_task_count %}</h1>
+                        <p>残りのタスク数</p>
+                    </div>
+                </article>
+                <article class="button_container">
+                    <a href="{% url 'todo:task_create' %}" class="add_task_button">
+                        <img class="icon" src="{% static "img/plus_icon.svg" %}" alt="">
+                        <p>タスクを追加</p>
+                    </a>
+                    <form method="GET" action="{% url 'todo:task_list' %}" class="completed_tasks_form">
+                        {% if request.GET.isCompleted != 'true' %}
+                            <input type="hidden" name="isCompleted" value="true">
+                            <input type="hidden" name="sortBy" value="complete_date">
+                        {% endif %}
+                        <button type="submit" class="completed_tasks_button {% if request.GET.isCompleted == 'true' %}checked{% endif %}">
+                        </button>
+                    </form>
+                </article>
+            </section>
+        </div>
+        <section class="taskList">
+            {% block content %}
+            {% endblock %}
+        </section>
+    </main>
+</body>
+</html>
